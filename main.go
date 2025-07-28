@@ -12,22 +12,23 @@ package main
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
+	"strconv" //converts string to int in getCardValue
 )
 
 // clearScreen clears the terminal screen
+// from cursor code
 func clearScreen() {
 	fmt.Print("\033[H\033[2J") // ANSI escape code to clear screen
 }
 
-// Define a card struct with Suit and Value fields
+// Define a card struct(collection of fields) with Suit and Value custom fields
 type Card struct {
 	Suit  string // Hearts, Diamonds, Clubs, Spades
-	Value string // 2-10, Jack, Queen, King, Ace
+	Value string // 2-10, (Jack, Queen, King) also 10, Ace 1 or 11
 }
 
 // Create a function to build a standard deck of 52 cards (Slice of Cards)
-// Need to combine suits and values
+// Need to combine suits and values, [] = define a slice
 func buildDeck() []Card {
 	deck := []Card{} // Initialize an empty slice ,"deck" that holds all cards
 	// make a slice of suits with type string
@@ -46,15 +47,15 @@ func buildDeck() []Card {
 	}
 	return deck //returns 52 unique cards
 
-}
+} // end of buildDeck()
 
 // Write a shuffle function using rand.Shuffle
 // Called after buildDeck() is ran
-func shuffleDeck(deck []Card) { //call the deck
+func shuffleDeck(deck []Card) { //returns the shuffled deck
 	rand.Shuffle(len(deck), func(i, j int) { //Shuffles the length of the deck, function swaps two cards
 		deck[i], deck[j] = deck[j], deck[i] //swaps the cards from random indexes in the deck
 	})
-}
+} // end of shuffleDeck()
 
 // Write a function to draw a card from the deck
 // deck must be shuffled prior, shuffle deck to be called in main before drawCard()
@@ -62,6 +63,7 @@ func shuffleDeck(deck []Card) { //call the deck
 // return the card so we know what we drew
 // return the remaining deck without that card so we don't draw it again
 // draws from the end of the slice and returns both, last card drawn and the remaining cards in the deck
+// reserached if the deck is taken from the start or end, found out it was from the end
 func drawCard(deck []Card) (Card, []Card) { // Card = the single card you drew, []Card = the remaining deck slice
 	lastCard := deck[len(deck)-1] // the last card
 	newDeck := deck[:len(deck)-1] // everything but the last card
@@ -75,7 +77,7 @@ func drawCard(deck []Card) (Card, []Card) { // Card = the single card you drew, 
 // Number cards are converted from string to int.
 // since values are currently type String, we need to convert them to numbers so the game can function
 func getCardValue(card Card) int {
-	switch card.Value { //change for loop and if statement to switch statement
+	switch card.Value { //change for loop and if statement to switch statement, better for mapping a single value to diff outcomes based on fixed cases // for loop is suseful when processign multiple items
 	case "Jack", "Queen", "King": // case is like if statement, if card.Value is equal to J,Q,K. ret 10
 		return 10
 	case "Ace": // else if card is Ace return 11, need to make Ace logic in handValue() because depends on the total hand value
@@ -85,14 +87,15 @@ func getCardValue(card Card) int {
 		//researched online how to convert string to int, found strconv import that has a method to make it easier
 		return num
 	}
-}
+} // end of getCardValue()
 
 // Implment hand value, uses card values to add up whats in the players/dealers hand
 // Remember to handle Aces properly, 1 or 11
 // Input: A slice of Card represents a hand
 // Output: The total Blackjack value of that hand
 func handValue(hand []Card) int { // slice of card, "hand", return total hand value as int
-	total := 0    // hold the sum of the hand
+	// := declaration operator, decalre and intitalize a variable
+	total := 0    // holds the sum of the hand
 	aceCount := 0 // count the amount of Aces in hand/deck
 
 	//loop through each card
@@ -185,21 +188,21 @@ func runTest() {
 
 func main() {
 	clearScreen() //Clears the terminal screen
-	//Assign for both player and dealer to use
+	//Assign variable card for both player and dealer to use
 	var card Card
 	//First lets build the deck
 	deck := buildDeck()
-	//Shuffle deck
+	//Shuffle the deck
 	shuffleDeck(deck)
 	//Initalize hands by decalring an emply slice of Card, {} intializes empty slice
 	playerHand := []Card{}
 	dealerHand := []Card{}
-	//both the player and the dealer need to draw cards
-	// call the drawCard()
+
+	//both the player and the dealer now need to draw cards
 	//Players card
-	card1, deck := drawCard(deck) //player first card. card 1 is the card drawn, deck, is the where the card is taken from
-	playerHand = append(playerHand, card1)
-	card2, deck := drawCard(deck)
+	card1, deck := drawCard(deck)          //player first card. card 1 is the card drawn from deck
+	playerHand = append(playerHand, card1) // playerHand is appended with the card drawn
+	card2, deck := drawCard(deck)          //Players second card
 	playerHand = append(playerHand, card2)
 
 	//Dealers card
@@ -208,13 +211,8 @@ func main() {
 	card4, deck := drawCard(deck) // dealer second card
 	dealerHand = append(dealerHand, card4)
 
+	//Start the game
 	fmt.Println("Welcome to Blackjack")
-	// fmt.Printf("Player's Hand: %s of %s, ", playerHand[0].Value, playerHand[0].Suit) //Display player hands first card
-	// fmt.Printf("%s of %s", playerHand[1].Value, playerHand[1].Suit)                  //Display player hands second card
-	// fmt.Println(" ")
-	// fmt.Printf("Dealer's Hand: %s of %s, [Hidden]\n", //Displays dealer hands first card but keeps the second one hidden for now
-	// 	dealerHand[0].Value, dealerHand[0].Suit)
-
 	//Players Turn
 	//Ask for a hit or stand
 	//Display the player's hand and its value
@@ -239,30 +237,30 @@ func main() {
 		// fmt.Scanln(&choice)         //uses the Scanln() to read the line of text entered by the user until a newline char is pressed and stores it in the choice variable
 		// fmt.Printf("Player entered: %s\n", choice)
 
-		for _, card := range playerHand {
-			fmt.Printf("- %s of %s\n", card.Value, card.Suit)
+		for _, card := range playerHand { //For each card in the players hand
+			fmt.Printf("- %s of %s\n", card.Value, card.Suit) //Print their card value and suit, ex: "Ace of Spades"
 
 		}
-		fmt.Println("Total value:", handValue(playerHand))
-		fmt.Printf("Dealer's Hand: %s of %s, [Hidden]\n", dealerHand[0].Value, dealerHand[0].Suit)
-		var choice string
-		fmt.Print("Hit or Stand? ") //prompt the user Hit or Stand
-		fmt.Scanln(&choice)         //uses the Scanln() to read the line of text entered by the user until a newline char is pressed and stores it in the choice variable
-		fmt.Printf("Player entered: %s\n", choice)
-		if choice == "Hit" {
-			card, deck = drawCard(deck) //players card drawn, deck(sliced array) its from, := creates a new variable
-			playerHand = append(playerHand, card)
+		fmt.Println("Players total value:", handValue(playerHand))                                 //Print the total sum of the cards in the Players Hand
+		fmt.Printf("Dealer's Hand: %s of %s, [Hidden]\n", dealerHand[0].Value, dealerHand[0].Suit) //print the dealers hand with the second card hidden for now
+		var choice string                                                                          // create a string variable for the user to input in the terminal
+		fmt.Print("Hit or Stand? ")                                                                //prompt the user Hit or Stand
+		fmt.Scanln(&choice)                                                                        //uses the Scanln() to read the line of text entered by the user until a newline char is pressed and stores it in the choice variable, researched Scanln on google
+		fmt.Printf("Player entered: %s\n", choice)                                                 //%s is a format verb
+		if choice == "Hit" {                                                                       // If the user types Hit
+			card, deck = drawCard(deck)           //players card drawn from deck(sliced array)
+			playerHand = append(playerHand, card) // added to the players hand
 			//Update the players hand
 
-			if handValue(playerHand) > 21 {
+			if handValue(playerHand) > 21 { // if playerhand total value is greater than 21
 				fmt.Println("Player busts!, Dealer Wins!")
 				fmt.Println("Players Total value:", handValue(playerHand))
 				fmt.Println("Dealer's full hand:")
-				for _, card := range dealerHand {
+				for _, card := range dealerHand { //reveal dealers hand now since player lost
 					fmt.Printf("- %s of %s\n", card.Value, card.Suit)
 				}
-				fmt.Println("Dealer's Total value:", handValue(dealerHand))
-				return // exit the funciton, ending the game right away without going to dealers turn
+				fmt.Println("Dealer's Total value:", handValue(dealerHand)) //reveal dealers total value
+				return                                                      // exit the funciton, ending the game right away without going to dealers turn
 			}
 		} else if choice == "Stand" {
 			fmt.Println("Player choose Stand, Dealers Turn,")
@@ -279,7 +277,7 @@ func main() {
 	//Loop through dealers full hand
 	println("Dealers Turn")
 	println("Dealers Hand")
-	for _, card := range dealerHand {
+	for _, card := range dealerHand { //dealers full hand
 		fmt.Printf("- %s of %s\n", card.Value, card.Suit)
 		//fmt.Printf("Dealer's Hand: %s of %s, [Hidden]\n", dealerHand[0].Value, dealerHand[0].Suit)
 	}
@@ -291,7 +289,7 @@ func main() {
 		//print dealer drew a card
 		fmt.Println("Dealer drew a card: ", card.Value, card.Suit)
 		//display dealers hand
-		fmt.Println("Dealers hand: ", handValue(dealerHand), card.Suit, card.Value)
+		fmt.Println("Dealers Total Value:", handValue(dealerHand))
 	}
 	//Compare results
 	if handValue(dealerHand) > 21 {
